@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import apiService from '@/services/api.service'; // Adaptez le chemin
-// Assurez-vous que ce chemin pointe vers votre artistSchema.js complet
-import { artistSchema } from '@/features/admin/artists/schemas/artistSchema.js'; // Adaptez le chemin
+// Assurez-vous que ce chemin pointe vers votre artistSchema.jsx complet
+import { artistSchema } from '@/features/admin/artists/schemas/artistSchema.jsx'; // Adaptez le chemin
 
 import {
     Box, Typography, Paper, TextField, Button,
