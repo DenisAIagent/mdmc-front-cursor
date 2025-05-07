@@ -5,9 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-import apiService from '@/services/api.service'; // Adaptez le chemin
+import apiService from '@/services/api.service'; // Adaptez le chemin si besoin
 // Assurez-vous que ce chemin pointe vers votre artistSchema.js complet
-import { artistSchema } from '@/features/admin/artists/schemas/artistSchema.js'; // Adaptez le chemin
+import { artistSchema } from '@/features/admin/artists/schemas/artistSchema.js'; // Adaptez le chemin si besoin
 
 import {
     Box, Typography, Paper, TextField, Button,
@@ -25,7 +25,7 @@ function ArtistCreatePage({ isInModal = false, onSuccessInModal, onCancelInModal
         handleSubmit,
         formState: { errors, isSubmitting },
         register,
-        watch, // Pour prévisualiser artistImageUrl si besoin
+        watch,
         reset,
     } = useForm({
         resolver: zodResolver(artistSchema),
@@ -34,7 +34,7 @@ function ArtistCreatePage({ isInModal = false, onSuccessInModal, onCancelInModal
             bio: '',
             artistImageUrl: '',
             websiteUrl: '',
-            socialLinks: [], // Initialiser comme tableau vide
+            socialLinks: [],
         }
     });
 
@@ -47,24 +47,19 @@ function ArtistCreatePage({ isInModal = false, onSuccessInModal, onCancelInModal
         setServerError(null);
         const submissionData = {
             ...data,
-            bio: data.bio || undefined, // Envoyer undefined si vide pour que le backend puisse l'omettre
+            bio: data.bio || undefined,
             artistImageUrl: data.artistImageUrl || undefined,
             websiteUrl: data.websiteUrl || undefined,
             socialLinks: data.socialLinks?.filter(link => link.platform && link.url.trim() !== '') || [],
         };
 
         try {
-            // Utilisez la fonction de votre service API (ex: apiService.artists.create ou apiService.createArtist)
-<<<<<<< HEAD
-            const response = await apiService.createArtist(submissionData); // Ou apiService.artists.create(submissionData)
-=======
+            // Utilisation de apiService.artists.createArtist comme dans votre service
             const response = await apiService.artists.createArtist(submissionData);
->>>>>>> e3cb9c9 (Ajout de la configuration de déploiement)
 
-            // Adaptez cette condition de succès à la structure de réponse de VOTRE API
-            // Par exemple, si succès = l'objet artiste est retourné avec un _id
-            if (response && (response.success || response._id || response.data?._id)) {
-                const createdArtist = response.data || response; // Assumer que l'artiste créé est dans response.data ou response
+            // Votre intercepteur Axios retourne response.data (qui contient { success: true/false, data: ..., error: ... })
+            if (response && response.success && response.data) {
+                const createdArtist = response.data;
                 toast.success(`Artiste "${createdArtist.name}" créé avec succès !`);
                 if (isInModal && onSuccessInModal) {
                     reset();
@@ -73,14 +68,22 @@ function ArtistCreatePage({ isInModal = false, onSuccessInModal, onCancelInModal
                     navigate('/admin/artists'); // Adaptez la route de redirection si besoin
                 }
             } else {
-                const errorMsg = response.error || response.message || 'Erreur lors de la création de l\'artiste.';
-                setServerError(errorMsg);
-                toast.error(errorMsg);
+                const errorMsg = response.error || 'Erreur inattendue lors de la création de l\'artiste.';
+                if (isInModal) {
+                    toast.error(errorMsg);
+                } else {
+                    setServerError(errorMsg);
+                }
+                if(!isInModal) toast.error(errorMsg); // Afficher le toast aussi si ce n'est pas dans un modal mais qu'il y a une erreur
             }
         } catch (err) {
             console.error("Erreur API lors de la création de l'artiste:", err);
-            const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message || 'Une erreur serveur est survenue.';
-            setServerError(errorMsg);
+            const errorMsg = err.message || 'Une erreur serveur est survenue.';
+             if (isInModal) {
+                toast.error(errorMsg);
+            } else {
+                setServerError(errorMsg);
+            }
             toast.error(errorMsg);
         }
     };
@@ -88,13 +91,11 @@ function ArtistCreatePage({ isInModal = false, onSuccessInModal, onCancelInModal
     const formFields = (
         <>
             {serverError && !isInModal && <Alert severity="error" sx={{ mb: 2 }}>{serverError}</Alert>}
-            {/* En mode modal, les erreurs serveur pourraient être gérées différemment ou via toast */}
 
             <TextField margin="normal" required fullWidth label="Nom de l'Artiste" autoFocus {...register("name")} error={!!errors.name} helperText={errors.name?.message}/>
             <TextField margin="normal" fullWidth label="Biographie (Optionnel)" multiline rows={3} {...register("bio")} error={!!errors.bio} helperText={errors.bio?.message}/>
             <TextField margin="normal" fullWidth label="URL de l'Image (Optionnel)" type="url" {...register("artistImageUrl")} error={!!errors.artistImageUrl} helperText={errors.artistImageUrl?.message}/>
-            {/* Si vous voulez un aperçu de l'image : */}
-            {/* {watch('artistImageUrl') && <Box component="img" src={watch('artistImageUrl')} alt="Aperçu" sx={{maxHeight: 100, mt:1, borderRadius:1}}/>} */}
+            {watch('artistImageUrl') && <Box component="img" src={watch('artistImageUrl')} alt="Aperçu" sx={{maxHeight: 100, mt:1, borderRadius:1, display:'block', mx:'auto'}}/>}
             <TextField margin="normal" fullWidth label="Site Web (Optionnel)" type="url" {...register("websiteUrl")} error={!!errors.websiteUrl} helperText={errors.websiteUrl?.message}/>
 
             <Box sx={{ mt: 2, mb: 1 }}>
@@ -121,7 +122,7 @@ function ArtistCreatePage({ isInModal = false, onSuccessInModal, onCancelInModal
                 <Button type="button" onClick={() => appendSocialLink({ platform: '', url: '' })} startIcon={<AddCircleOutlineIcon />} variant="outlined" size="small">
                     Ajouter un lien social
                 </Button>
-                {errors.socialLinks && !Array.isArray(errors.socialLinks) && (
+                {errors.socialLinks && !Array.isArray(errors.socialLinks) && ( // Erreur générale pour le tableau de liens sociaux
                     <FormHelperText error sx={{mt:1}}>{errors.socialLinks.message || errors.socialLinks.root?.message}</FormHelperText>
                 )}
             </Box>
@@ -142,6 +143,7 @@ function ArtistCreatePage({ isInModal = false, onSuccessInModal, onCancelInModal
         );
     }
 
+    // Rendu pour la page autonome
     return (
         <Paper sx={{ p: {xs: 2, md: 3}, maxWidth: '700px', margin: '2rem auto' }}>
             <Typography variant="h5" component="h1" sx={{ mb: 2 }}>Créer un Nouvel Artiste</Typography>

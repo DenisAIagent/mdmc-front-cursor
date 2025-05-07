@@ -63,6 +63,7 @@ export const authService = {
 };
 
 // --- Service pour les SmartLinks (MIS À JOUR) ---
+<<<<<<< HEAD
 export const smartLinkService = {
   create: async (data) => apiClient.post("/smartlinks", data), // POST /api/smartlinks
   getAll: async (params) => apiClient.get("/smartlinks", { params }), // GET /api/smartlinks
@@ -78,6 +79,18 @@ export const smartLinkService = {
   // Nouvelle méthode pour logguer un clic sur une plateforme spécifique
   logPlatformClick: async (smartlinkId, platformData) => // platformData pourrait être { platformName: 'Spotify' }
     apiClient.post(`/smartlinks/${smartlinkId}/log-platform-click`, platformData), // POST /api/smartlinks/:id/log-platform-click
+=======
+export const smartlinksService = {
+  create: async (data) => apiClient.post("/smartlinks", data),
+  getAll: async (params) => apiClient.get("/smartlinks", { params }),
+  getById: async (id) => apiClient.get(`/smartlinks/${id}`),
+  update: async (id, data) => apiClient.put(`/smartlinks/${id}`, data),
+  delete: async (id) => apiClient.delete(`/smartlinks/${id}`),
+  getBySlugs: async (artistSlug, trackSlug) =>
+    apiClient.get(`/smartlinks/public/${artistSlug}/${trackSlug}`),
+  logPlatformClick: async (smartlinkId, platformData) =>
+    apiClient.post(`/smartlinks/${smartlinkId}/log-platform-click`, platformData),
+>>>>>>> e3cb9c9 (Ajout de la configuration de déploiement)
 };
 
 // --- Service pour les Artistes ---
@@ -119,11 +132,54 @@ export const blogService = {
 // Exporter un objet contenant tous les services pour un accès facile et typé
 const apiService = {
   auth: authService,
+<<<<<<< HEAD
   smartlinks: smartLinkService,
+=======
+  smartlinks: smartlinksService,
+>>>>>>> e3cb9c9 (Ajout de la configuration de déploiement)
   artists: artistService,
   upload: uploadService,
   reviews: reviewService,
   blog: blogService,
+<<<<<<< HEAD
+=======
+  analytics: {
+    trackEvent: async (event) => {
+      try {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/analytics/events`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify(event),
+        });
+        return await response.json();
+      } catch (error) {
+        console.error('Erreur lors du tracking de l\'événement:', error);
+        throw error;
+      }
+    },
+
+    getAnalytics: async (smartLinkId, params = {}) => {
+      try {
+        const queryParams = new URLSearchParams(params).toString();
+        const response = await fetch(
+          `${API_CONFIG.BASE_URL}/analytics/smartlinks/${smartLinkId}?${queryParams}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+        return await response.json();
+      } catch (error) {
+        console.error('Erreur lors de la récupération des analytics:', error);
+        throw error;
+      }
+    },
+  },
+>>>>>>> e3cb9c9 (Ajout de la configuration de déploiement)
   // apiClientInstance: apiClient, // Si vous avez besoin d'accéder directement à l'instance
 };
 
